@@ -1,0 +1,118 @@
+import wx
+from agenda1 import *
+
+
+class AgendaTelefonica(wx.Frame):
+    def __init__(self, parent, id):
+        janela = wx.Frame.__init__(self, parent, id, 'Principado Louças - Agenda Telefonica', size=(600, 350),
+                                   style=wx.MINIMIZE_BOX | wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
+
+        menuBar = wx.MenuBar()
+        filemenu = wx.Menu()
+        filemenu2 = wx.Menu()
+
+        menuExibeAgenda = filemenu.Append(wx.ID_ANY, "Agenda", "Para exibir a agenda telefônica")
+        menuSeparador = filemenu.AppendSeparator()
+        menuExit = filemenu.Append(wx.ID_EXIT, "Sair", " Sair do programa")
+        menuAbout = filemenu2.Append(wx.ID_ABOUT, "Sobre", " Informações sobre systema")
+
+        menuBar.Append(filemenu, "Cadastro")
+        menuBar.Append(filemenu2, "Ajuda")
+        self.SetMenuBar(menuBar)
+        self.CreateStatusBar()
+
+        self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
+        self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
+        self.Bind(wx.EVT_MENU, self.exibeAgenda, menuExibeAgenda)
+        self.Show(True)
+
+        self.painel = wx.Panel(self, 100)
+
+    def OnAbout(self, e):
+        dlg = wx.MessageDialog(self, "Elaborado por Denis Lougon", "Principado Louças", wx.OK)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+    def OnExit(self, e):
+        dlg = wx.MessageDialog(self, "Deseja Realmente sair do Sistema?", "Principado Louças", wx.YES_NO)
+        if dlg.ShowModal() == wx.ID_YES:
+            self.Close(True)
+
+    def exibeAgenda(self, e):
+        pricodStxt = wx.StaticText(self.painel, 101, u'Código: ', (15, 25), style=0)
+        self.codCtxt = wx.TextCtrl(self.painel, 130, '', (60, 25),
+                                   style=wx.TE_PROCESS_ENTER)  # PROBLEMA ESTA A  AQUI  <<<<<<<<<
+        self.codCtxt.Bind(wx.EVT_TEXT_ENTER, self.buscarCadastroCod)
+        self.codCtxt.SetFocus()
+
+        priNomeStxt = wx.StaticText(self.painel, 101, u'Nome: ', (180, 25), style=0)
+        self.priNomeCtxt = wx.TextCtrl(self.painel, 130, '', (220, 25), style=wx.TE_PROCESS_ENTER)
+        self.priNomeCtxt.Bind(wx.EVT_TEXT_ENTER, self.buscarCadastroNome)
+
+        segNomeStxt = wx.StaticText(self.painel, 101, u'Geral: ', (330, 25), style=0)
+        self.segNomeCtxt = wx.TextCtrl(self.painel, 130, '', pos=(365, 25), size=(200, 210),
+                                       style=wx.TE_MULTILINE)  # <<<<<
+
+        foneStxt = wx.StaticText(self.painel, 101, u'Fone: ', (15, 70), style=0)
+        self.foneCtxt = wx.TextCtrl(self.painel, 130, '', (60, 60), style=0)
+
+        emailStxt = wx.StaticText(self.painel, 101, u'Exibe: ', (180, 70), style=0)
+        self.emailCtxt = wx.TextCtrl(self.painel, 130, '', (220, 65), style=0)
+
+        self.msgStxt = wx.StaticText(self.painel, 101, u'Status da Consulta', (85, 110), style=0)
+
+        btcod = wx.Button(self.painel, wx.ID_ANY, label=u'Busca Código', pos=(50, 240), style=0)
+        btcod.Bind(wx.EVT_BUTTON, self.buscarCadastroCod)
+        btcod.Show(True)
+
+        btnome = wx.Button(self.painel, wx.ID_ANY, label=u'Busca Nome', pos=(165, 240), style=0)
+        btnome.Bind(wx.EVT_BUTTON, self.buscarCadastroNome)
+        btnome.Show(True)
+
+        btgeral = wx.Button(self.painel, wx.ID_ANY, label=u'Busca Geral', pos=(270, 240), style=0)
+        btgeral.Bind(wx.EVT_BUTTON, self.buscarCadastroGeral)
+        btgeral.Show(True)
+
+    def buscarCadastroNome(self, e):
+        cad = Cadastro()
+
+        pnome = self.priNomeCtxt.GetValue()
+
+        self.msgStxt.SetLabelText(cad.selectCadNome(pnome))
+        self.codCtxt.SetLabelText(str(cad.cod))
+        self.priNomeCtxt.SetLabelText(str(cad.nome))
+        self.segNomeCtxt.SetLabelText(str(cad.nome2))
+        self.foneCtxt.SetLabelText(str(cad.telefone))
+        self.emailCtxt.SetLabelText(str(cad.email))
+
+    def buscarCadastroCod(self, e):
+        cad = Cadastro()
+
+        codigo = self.codCtxt.GetValue()
+
+        self.msgStxt.SetLabelText(cad.selectCadCod(codigo))
+        self.codCtxt.SetLabelText(str(cad.cod))
+        self.priNomeCtxt.SetLabelText(str(cad.nome))
+        self.segNomeCtxt.SetLabelText(str(cad.nome2))
+        self.foneCtxt.SetLabelText(str(cad.telefone))
+        self.emailCtxt.SetLabelText(str(cad.email))
+
+    def buscarCadastroGeral(self, e):
+        cad = Cadastro()
+
+        codigo = self.segNomeCtxt.GetValue()
+        self.msgStxt.SetLabelText(cad.selectCadGeral(codigo))
+
+        for i in cad.lista:
+            self.segNomeCtxt.AppendText("\n")
+            self.segNomeCtxt.AppendText("%s" % i)
+
+
+if __name__ == '__main__':
+    app = wx.App()
+    janela = AgendaTelefonica(parent=None, id=999)
+    janela.SetToolTip(wx.ToolTip('This is a frame'))
+    janela.Centre()
+
+    janela.Show()
+    app.MainLoop()
